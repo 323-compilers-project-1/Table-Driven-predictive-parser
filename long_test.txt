@@ -16,9 +16,7 @@ function sub$ [x:int, y:int]
     sub = sub$ (x, y);
 
     put ((add + sub) + (add - sub));
-    int i;
-    i = 0;
-    while (i < 10)
+    while (x < 10)
       {
         put (i);
         i = i + 1;
@@ -38,4 +36,3 @@ function sub$ [x:int, y:int]
         put (i);
       }
       endif
-   
