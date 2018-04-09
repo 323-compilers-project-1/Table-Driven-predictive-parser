@@ -1718,6 +1718,17 @@ void SyntacticalAnalyzer::createTable()
 	table.emplace(table_key, tablePos);
 	tablePos.clear();
 
+	///
+	production.terminal = "/";
+	table_key = production.production + "," + production.terminal;
+
+	tablePos.push_back("/");
+	tablePos.push_back("<Factor>");
+	tablePos.push_back("<Term Triple Prime>");
+
+	table.emplace(table_key, tablePos);
+	tablePos.clear();
+
 #pragma endregion
 
 #pragma region Term Triple Prime
@@ -1820,6 +1831,17 @@ void SyntacticalAnalyzer::createTable()
 	tablePos.push_back("/");
 	tablePos.push_back("<Factor>");
 	tablePos.push_back("<Term Triple Prime>");
+
+	table.emplace(table_key, tablePos);
+	tablePos.clear();
+
+	// *
+	production.terminal = "*";
+	table_key = production.production + "," + production.terminal;
+
+	tablePos.push_back("/");
+	tablePos.push_back("<Factor>");
+	tablePos.push_back("<Term Double Prime>");
 
 	table.emplace(table_key, tablePos);
 	tablePos.clear();
@@ -2240,7 +2262,9 @@ void SyntacticalAnalyzer::analyze()
 		//if the string vector is empty we simply pop off the an item in the stack
 		if (cellVector[0] == "<Empty>")
 		{
-			//might need to output rule here
+			//might need to output rule here   
+			//Yep - Daniel
+			cout << tableStack.top() << " => <Empty>" << endl;
 			this->tableStack.pop();
 			continue;
 		}
