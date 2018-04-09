@@ -4,11 +4,11 @@ function convert$ [fahr:int]
 }
 
 %%
-     int    low,  high, step$;      ! declarations !
+     int low, high, step$;      ! declarations !
 
-     get (low, high, step$);
-     while (low  <  high )  
-         {  put (low);
-             put (convert$ (low));
-             low =  low  +  step$;
+     get(low, high, step$);
+     while(low  <  high )  
+         {  put(low);
+             put(convert$ (low));
+             low =  low + step$;
          }

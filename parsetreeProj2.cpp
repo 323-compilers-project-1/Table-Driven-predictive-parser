@@ -333,17 +333,10 @@ list<string> split_lex_word(string lex)
 	string number = "";
 	string op = "";
 
-	bool start_of_word = false;
-	bool end_of_word = false;
-
 	for (unsigned int i = 0; i < lex.size(); i++)
 	{
 		if (isSeperator(lex[i]))
 		{
-			if (start_of_word == true && lex[i] != ':')
-			{
-				end_of_word = true;
-			}
 			//creating a string to put into string list
 			//sep_count++;
 			string sep(1, lex[i]);
@@ -351,10 +344,6 @@ list<string> split_lex_word(string lex)
 		}
 		else if (isOperator(lex[i]))
 		{
-			if (start_of_word == true && lex[i] != ':')
-			{
-				end_of_word = true;
-			}
 			//need to make special case for 2 ops next to each other
 			//creating a string to put into string list
 			op.push_back(lex[i]);
@@ -371,16 +360,8 @@ list<string> split_lex_word(string lex)
 				op.clear();
 			}
 		}
-		else if (isalpha(lex[i]) || lex[i] == '$' || isdigit(lex[i]) || lex[i] == '.')
+		else if (isalpha(lex[i]) || lex[i] == '$')
 		{
-			if (start_of_word == false)
-			{
-				start_of_word = true;
-			}
-			if (end_of_word == true)
-			{
-				throw "token_error";
-			}
 			//this is assuming that
 			word.push_back(lex[i]);
 			if (isOperator(lex[i + 1]) || isSeperator(lex[i + 1]) || lex[i + 1] == ' ')
@@ -391,6 +372,16 @@ list<string> split_lex_word(string lex)
 			}
 
 		}
+		else if (isdigit(lex[i]) || lex[i] == '.')
+			{
+			number.push_back(lex[i]);
+			if (isOperator(lex[i + 1]) || isSeperator(lex[i + 1]) || lex[i + 1] == ' ')
+				{
+				lexWord.push_back(number);
+				number.clear();
+				
+				}
+			}
 	}
 	//I added this just to check if the strings got cleared
 	if (word != "")

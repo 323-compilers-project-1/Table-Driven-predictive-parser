@@ -11,28 +11,28 @@ function sub$ [x:int, y:int]
 %%
     int x, y, add, sub, result;
 
-    get (x, y);
-    add = add$ (x, y);
-    sub = sub$ (x, y);
+    get(x, y);
+    add=add$(x, y);
+    sub=sub$(x, y);
 
-    put ((add + sub) + (add - sub));
-    while (x < 10)
+    put((add + sub) + (add - sub));
+    while(x < 10)
       {
-        put (i);
+        put(i);
         i = i + 1;
       }
 
-      if (x == y)
+      if(x == y)
       {
-        put (i);
+        put(i);
       }
       else
       {
-        put (y);
+        put(y);
       }
       endif
       if (x == y)
       {
-        put (i);
+        put(i);
       }
       endif
