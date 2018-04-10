@@ -6,22 +6,11 @@
 #include <stack>
 #include <queue>
 #include <vector>
-
+#include <iostream>
+#include <fstream>
 
 
 using namespace std;
-
-/*
-struct producitonSet
-{
-string production;
-string lexeme;
-};
-Class data
-unordered_map<producitonSet, vector<string>> table;
-stack<string> tableStack;	//Needs to be initalized with $Rat18s
-queue<string> inputQ;		//Needs to be but at back of queue will be done in overloaded constructor
-*/
 
 
 #pragma region Constructors
@@ -2221,6 +2210,9 @@ void SyntacticalAnalyzer::analyze()
 
 	productionSet production;
 
+	ofstream output_file;
+	output_file.open("output.txt", ios::out | std::ofstream::trunc);
+
 	// while loop starting here in order to traverse through array based on input
 	//this handles $ to end the syntactical analyzer if there is an error we will use continue or break to end loop and out put corresponding ms
 	while (this->tableStack.top() != "$")
@@ -2231,13 +2223,13 @@ void SyntacticalAnalyzer::analyze()
 		production.terminal = inputQ.front();
 		if (this->tableStack.top() == "<Rat18s>")
 		{
-			print_production(tableStack, inputQ, table);
+			print_production(tableStack, inputQ, table, output_file);
 			this->tableStack.pop();
 		}
 		else if (this->tableStack.top() == this->inputQ.front())
 		{
-			cout << this->tableStack.top();
-			cout << endl;
+			cout << this->tableStack.top() << endl;
+			output_file << this->tableStack.top() << endl;
 			this->tableStack.pop();
 			this->inputQ.pop();
 			continue;
@@ -2252,6 +2244,7 @@ void SyntacticalAnalyzer::analyze()
 		if (got == table.end())
 		{
 			cout << prod << " not found" << endl;
+			output_file << prod << " not found" << endl;
 			return;
 		}
 
@@ -2265,6 +2258,7 @@ void SyntacticalAnalyzer::analyze()
 			//might need to output rule here   
 			//Yep - Daniel
 			cout << tableStack.top() << " => <Empty>" << endl;
+			output_file << tableStack.top() << " => <Empty>" << endl;
 			this->tableStack.pop();
 			continue;
 		}
@@ -2272,7 +2266,7 @@ void SyntacticalAnalyzer::analyze()
 		{
 			if (cellVector.front() == this->inputQ.front())
 			{
-				print_production(tableStack, inputQ, table);
+				print_production(tableStack, inputQ, table, output_file);
 				this->tableStack.pop();
 				for (int i = cellVector.size(); i > 0; i--)
 				{
@@ -2286,7 +2280,7 @@ void SyntacticalAnalyzer::analyze()
 			{
 				if (tableStack.top() != "$" && i == cellSize)
 				{
-					print_production(tableStack, inputQ, table);
+					print_production(tableStack, inputQ, table, output_file);
 					tableStack.pop();	//pops production that it finds
 				}
 				
@@ -2307,33 +2301,36 @@ void SyntacticalAnalyzer::analyze()
 	if (tableStack.top() == inputQ.front())
 	{
 		cout << "Correct syntax" << endl;
+		output_file << "Correct syntax" << endl;
 	}
 	else
 	{
 		cout << "Incorrect input" << endl;
+		output_file << "Incorrect input" << endl;
 	}
 
-
-
-
+	output_file.close();
 
 }
 
 #pragma endregion
 
-void SyntacticalAnalyzer::print_production(stack<string> tableStack, queue<string> input, unordered_map<string, vector<string>> table)
+void SyntacticalAnalyzer::print_production(stack<string> tableStack, queue<string> input, unordered_map<string, vector<string>> table, ofstream& output)
 {
 	productionSet production;
 	production.production = tableStack.top();
 	production.terminal = input.front();
 	{
 		cout << tableStack.top() << " => ";
+		output << tableStack.top() << " => ";
 		string prod = production.production + "," + input.front();
 		vector<string> to_prod = table[prod];
 		for (int i = 0; i < to_prod.size(); i++)
 		{
 			cout << to_prod[i];
+			output << to_prod[i];
 		}
 		cout << endl;
+		output << endl;
 	}
 }

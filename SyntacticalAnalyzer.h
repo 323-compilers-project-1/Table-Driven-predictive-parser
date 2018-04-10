@@ -6,12 +6,15 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 using std::stack;
 using std::queue;
 using std::string;
 using std::vector;
 using std::unordered_map;
+using std::ofstream;
 
 const int colLen = 36;
 const int rowLen = 45;
@@ -35,7 +38,7 @@ private:
 
 								//used by constructors
 	void createTable();
-	void print_production(stack<string> tableStack, queue<string> input, unordered_map<string, vector<string>> table);
+	void print_production(stack<string> tableStack, queue<string> input, unordered_map<string, vector<string>> table, ofstream& output);
 
 	productionSet getProductionSet(string input);
 
