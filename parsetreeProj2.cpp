@@ -1,13 +1,18 @@
 
 // LexicalAnalyzer.cpp : Defines the entry point for the console application.
 //
+#include "stdafx.h"
+// LexicalAnalyzer.cpp : Defines the entry point for the console application.
+//
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <list>
 #include "SyntacticalAnalyzer.h"
+#include "SymbolTable.h"
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -74,6 +79,10 @@ int main()
 	string word_to_lex;
 
 	queue<string> inputQ;
+	vector<string> symIds;
+	list<string> lexemes;
+	vector<string>::iterator it;
+
 
 	while (source_iter <  source_string.length())
 	{
@@ -81,20 +90,56 @@ int main()
 		skip_white_space(source_string, source_iter);
 		list<Token> tokenList;
 
+		
+
 		try
 		{
 			tokenList = lexer(word_to_lex);
 
-			
-			
+
+
 			while (tokenList.size() > 0)
 			{
+				
 				Token tmp = tokenList.front();
+				lexemes.push_back(tmp.lexeme);
 				char dSign = '$';
 				if (tmp.token == "identifier" || (tmp.lexeme).back() == dSign)
 				{
-					if (tmp.lexeme != "int")
+					if (tmp.lexeme != "int") //need to add the vect for all identifiers here
+					{
 						inputQ.push(tmp.token);
+
+						//add queue for lexmes of identifiers to keep track of when they were used project 3
+
+						if (tmp.lexeme == "integer" || tmp.lexeme == "boolean")
+						{
+							symIds.push_back(tmp.lexeme);
+						}
+
+						it = find(symIds.begin(), symIds.end(), tmp.lexeme);
+
+						if (it == symIds.end())
+						{
+							
+							symIds.push_back(tmp.lexeme);
+						}
+						else
+						{
+							int i = distance(symIds.begin(), it);
+							if (symIds[i] == tmp.lexeme)
+							{
+								cout << "cannot declare the same var " << tmp.lexeme << endl;
+							}
+
+								
+
+
+
+						}
+							
+						
+					}
 					else
 						inputQ.push("int");
 				}
@@ -111,7 +156,7 @@ int main()
 
 				tokenList.pop_front();
 			}
-		
+
 
 		}
 		catch (...)
@@ -125,7 +170,15 @@ int main()
 
 	}
 
-	SyntacticalAnalyzer sa(inputQ);
+	//hard coding the removal of integer from symIds
+
+
+	SymbolTable sm(symIds, lexemes);
+	//sm.printSymbolTable();
+
+	SyntacticalAnalyzer sa(inputQ, sm);
+
+	sa.sm.printSymbolTable();
 
 	sa.analyze();
 
@@ -373,15 +426,15 @@ list<string> split_lex_word(string lex)
 
 		}
 		else if (isdigit(lex[i]) || lex[i] == '.')
-			{
+		{
 			number.push_back(lex[i]);
 			if (isOperator(lex[i + 1]) || isSeperator(lex[i + 1]) || lex[i + 1] == ' ')
-				{
+			{
 				lexWord.push_back(number);
 				number.clear();
-				
-				}
+
 			}
+		}
 	}
 	//I added this just to check if the strings got cleared
 	if (word != "")

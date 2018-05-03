@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
+#include "SymbolTable.h"
 
 using std::stack;
 using std::queue;
@@ -16,9 +17,6 @@ using std::vector;
 using std::unordered_map;
 using std::ofstream;
 
-const int colLen = 36;
-const int rowLen = 45;
-const int cellMax = 15;
 
 struct productionSet
 {
@@ -32,6 +30,9 @@ class SyntacticalAnalyzer
 {
 
 private:
+
+
+
 	unordered_map<string, vector<string>> table;
 	stack<string> tableStack;	//Needs to be initalized with $Rat18s
 	queue<string> inputQ;		//Needs to be but at back of queue will be done in overloaded constructor
@@ -47,9 +48,10 @@ private:
 
 
 public:
+	SymbolTable sm;
 	//Constructors
 	SyntacticalAnalyzer();		//mainly used for error checking in main
-	SyntacticalAnalyzer(queue<string> inputQ);
+	SyntacticalAnalyzer(queue<string> inputQ, SymbolTable table);
 
 	void analyze();
 
