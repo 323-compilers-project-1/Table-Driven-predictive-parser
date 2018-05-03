@@ -124,7 +124,7 @@ int main()
 							
 							symIds.push_back(tmp.lexeme);
 						}
-						else
+						/*else
 						{
 							int i = distance(symIds.begin(), it);
 							if (symIds[i] == tmp.lexeme)
@@ -136,7 +136,7 @@ int main()
 
 
 
-						}
+						}*/
 							
 						
 					}
@@ -176,9 +176,9 @@ int main()
 	SymbolTable sm(symIds, lexemes);
 	//sm.printSymbolTable();
 
-	SyntacticalAnalyzer sa(inputQ, sm);
+	SyntacticalAnalyzer sa(inputQ);
 
-	sa.sm.printSymbolTable();
+	sm.printSymbolTable();
 
 	sa.analyze();
 

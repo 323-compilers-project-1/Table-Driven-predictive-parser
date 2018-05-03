@@ -42,7 +42,8 @@ void SymbolTable::removeBool()
 
 			end = find(this->lexemes.begin(), this->lexemes.end(), ";");
 
-			lexemes.erase(it, ++end);
+			if(end != this->lexemes.end())
+				lexemes.erase(it, ++end);
 
 		}
 
@@ -72,10 +73,6 @@ void SymbolTable::removeInt()
 		}
 
 	}
-
-
-
-
 
 }
 

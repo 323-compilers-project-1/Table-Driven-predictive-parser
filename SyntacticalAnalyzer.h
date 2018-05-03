@@ -48,10 +48,9 @@ private:
 
 
 public:
-	SymbolTable sm;
 	//Constructors
 	SyntacticalAnalyzer();		//mainly used for error checking in main
-	SyntacticalAnalyzer(queue<string> inputQ, SymbolTable table);
+	SyntacticalAnalyzer(queue<string> inputQ);
 
 	void analyze();
 

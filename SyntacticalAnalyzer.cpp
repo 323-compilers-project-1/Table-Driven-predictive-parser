@@ -2146,9 +2146,8 @@ SyntacticalAnalyzer::SyntacticalAnalyzer()
 
 }
 
-SyntacticalAnalyzer::SyntacticalAnalyzer(queue<string> inputQ, SymbolTable table)
+SyntacticalAnalyzer::SyntacticalAnalyzer(queue<string> inputQ)
 {
-	this->sm = table;
 	vector<string> tablePos;
 	//Initializing Stack
 	this->tableStack.push("$");

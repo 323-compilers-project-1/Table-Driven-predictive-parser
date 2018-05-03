@@ -61,6 +61,8 @@ public:
 
 	vector<string> symId;
 	list<string> lexemes;
+
+
 	//constructors
 	SymbolTable();
 	void printSymbolTable();
