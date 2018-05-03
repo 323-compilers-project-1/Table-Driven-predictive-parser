@@ -124,19 +124,38 @@ int main()
 							
 							symIds.push_back(tmp.lexeme);
 						}
-						/*else
+						else if(it != symIds.end() && tmp.lexeme == "integer" || tmp.lexeme == "boolean")
 						{
-							int i = distance(symIds.begin(), it);
+							/*int i = distance(symIds.begin(), it);
 							if (symIds[i] == tmp.lexeme)
 							{
 								cout << "cannot declare the same var " << tmp.lexeme << endl;
+							} */
+							
+							vector<string>::iterator check;
+
+							for (list<Token>::iterator i = tokenList.begin(); i != tokenList.end(); i++)
+							{
+								string tmp = i->lexeme;
+								check = find(symIds.begin(), symIds.end(), tmp);
+
+								if (check != symIds.end())
+								{
+									cout << "cannot declare things twice" << endl;
+									break;
+
+								}
+							
+							
+							
 							}
+
 
 								
 
 
 
-						}*/
+						}
 							
 						
 					}

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-#pragma region Constructors
+#pragma region SymbolTable Functions
 
 SymbolTable::SymbolTable()
 {
@@ -132,6 +132,8 @@ void SymbolTable::printSymbolTable()
 }
 
 #pragma endregion
+
+
 
 SymbolTable::~SymbolTable()
 {

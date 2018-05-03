@@ -20,13 +20,7 @@ using std::list;
 
 
 
-struct asmTableInput
-{
-	int line;
-	string action;
-	int value;
 
-};
 
 struct symTableInput
 {
@@ -39,10 +33,8 @@ struct symTableInput
 class SymbolTable
 {
 private:
-	vector<string> semantics = {"TYPE", "PUSHI", "PUSHM", "POPM", "STDOUT", "STDIN", "ADD", "SUB", "MUL", "DIV", "GRT", "LES", "EQU", "NEQ", "GEQ", "LEQ", "JUMPZ", "JUMP", "LABEL"};
-
-
 	vector<string>::iterator it;
+	
 
 	int stackAddress; //stack address assoicated with actionStack 
 
@@ -53,13 +45,13 @@ private:
 	
 
 public:
-	vector<asmTableInput> asmTable;
 	vector<symTableInput> symbolTable;
 
-	stack<int> jmpstack;
-	stack<int> actionstack;
+	
+	//stack<int> actionstack;
 
 	vector<string> symId;
+
 	list<string> lexemes;
 
 
@@ -67,6 +59,8 @@ public:
 	SymbolTable();
 	void printSymbolTable();
 	SymbolTable(vector<string> symId, list<string> lex);
+
+	
 	
 
 
