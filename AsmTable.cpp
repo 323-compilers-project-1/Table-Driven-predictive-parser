@@ -68,7 +68,7 @@ list<string> AsmTable::getLine(string first, string last)
 #pragma endregion
 
 
-queue<string> AsmTable::Assign(list<string> line)
+void AsmTable::Assign(list<string> line)
 {
 	list<string>::iterator first = find(line.begin(), line.end(), "=");
 
@@ -184,12 +184,92 @@ queue<string> AsmTable::Assign(list<string> line)
 
 }
 
-queue<string> AsmTable::Expression(list<string> line)
+queue<string> AsmTable::expression(list<string> ex) 
 {
+	queue<string> result;
+	
+	list<string>::iterator it = find(ex.begin(), ex.end(), "(");
+	while (it != ex.end())
+	{
+		list<string>::iterator start_of_paren = it;
+		list<string>::iterator end_of_paren = find(ex.begin(), ex.end(), ")");
 
+		list<string> temp;
+		temp.splice(temp.begin(), ex, std::next(start_of_paren, 1), end_of_paren);
 
+		queue<string> paren_result;
 
+		for (list<string>::iterator i = temp.begin(); i != temp.end(); i++)
+		{
+			for (int j = 0; j < sm.symbolTable.size(); j++)
+			{
+				if (*i == sm.symbolTable[j].id)
+				{
+					paren_result.push(*i);
+				}
+			}
+		}
 
+		for (list<string>::iterator i = temp.begin(); i != temp.end(); i++)
+		{
+			if (*i == "*" || *i == "/")
+			{
+				paren_result.push(*i);
+			}
+		}
+
+		for (list<string>::iterator i = temp.begin(); i != temp.end(); i++)
+		{
+			if (*i == "+" || *i == "-")
+			{
+				paren_result.push(*i);
+			}
+		}
+
+		while(paren_result.size() != 0)
+		{
+			result.push(paren_result.front());
+			paren_result.pop();
+		}
+
+		ex.erase(start_of_paren, std::next(end_of_paren, 1));
+		it = find(ex.begin(), ex.end(), "(");
+	}
+
+	it = ex.begin();
+	while (it != ex.end())
+	{
+		for (int j = 0; j < sm.symbolTable.size(); j++)
+		{
+			if (*it == sm.symbolTable[j].id)
+			{
+				result.push(*it);
+			}
+		}
+		it++;
+	}
+
+	it = ex.begin();
+	while (it != ex.end())
+	{
+		if (*it == "*" || *it == "/") 
+		{
+			result.push(*it);
+		}
+		it++;
+	}
+
+	it = ex.begin();
+	while (it != ex.end())
+	{
+		if (*it == "+" || *it =="-")
+		{
+			result.push(*it);
+		}
+		it++;
+	}
+
+	return result;
 }
 
 /*vector<asmTableInput> AsmTable::table()
