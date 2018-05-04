@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SyntacticalAnalyzer.h"
 #include <unordered_map>
 #include <string>

@@ -60,6 +60,8 @@ public:
 	void printSymbolTable();
 	SymbolTable(vector<string> symId, list<string> lex);
 
+	int getAddress(string id);
+
 	
 	
 

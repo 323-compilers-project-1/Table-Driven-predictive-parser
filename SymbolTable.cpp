@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "SymbolTable.h"
 #include <algorithm>
 #include <list>
@@ -132,7 +133,38 @@ void SymbolTable::printSymbolTable()
 
 #pragma endregion
 
+#pragma region
 
+int SymbolTable::getAddress(string input)
+{	
+	int i = 0;
+	int address = -1;
+
+	while (symbolTable[i].id != input && i < symbolTable.size())
+	{
+		i++;
+	}
+	if (i == symbolTable.size() - 1)
+	{
+		if (symbolTable[i].id == input)
+		{
+			address = symbolTable[i].memAddrs;
+			return address;
+		}
+		else
+			return address; //note here address is -1 for error checking
+	}
+	else
+	{
+		address = symbolTable[i].memAddrs;
+		return address;
+
+
+	}
+
+}
+
+#pragma endregion
 
 SymbolTable::~SymbolTable()
 {
