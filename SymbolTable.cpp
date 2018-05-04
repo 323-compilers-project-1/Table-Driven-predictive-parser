@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SymbolTable.h"
 #include <algorithm>
 #include <list>

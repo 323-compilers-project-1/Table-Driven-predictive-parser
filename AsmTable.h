@@ -42,7 +42,7 @@ public:
 	AsmTable(SymbolTable sm);
 
 	void makeAsmTable();
-	list<string> getLine(char c);
+	list<string> getLine(string c);
 
 
 

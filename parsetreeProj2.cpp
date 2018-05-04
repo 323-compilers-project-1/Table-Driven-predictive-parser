@@ -1,7 +1,6 @@
 
 // LexicalAnalyzer.cpp : Defines the entry point for the console application.
 //
-#include "stdafx.h"
 // LexicalAnalyzer.cpp : Defines the entry point for the console application.
 //
 #include <iostream>
