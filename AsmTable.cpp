@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "AsmTable.h"
 #include <algorithm>
 #include <iostream>
@@ -22,9 +21,6 @@ AsmTable::AsmTable(SymbolTable sm)
 	this->lexemes = sm.lexemes;
 	this->lexemes.pop_front();
 	lineNum = 0;
-
-
-
 }
 
 #pragma endregion
@@ -398,33 +394,84 @@ bool AsmTable::isSeparetor(string to_lex)
 {
 	
 	 list<string>::iterator placeHolder;
+	 if (delim == "}" ) {
+		 int delim_layer = 0;
+		 list<string>::iterator beg = line.begin();
+		 while (beg != line.end())
+		 {
+			 if (delim == "}" && *beg == "{")
+			 {
+				 delim_layer++;
+			 }
+			 beg++;
+		 }
+		 //have to find a way to not make this true
+		 list<string>::iterator placeHolder;
+		 for (list<string>::iterator i = line.begin(); i != line.end(); i++)
+		 {
+			 //can only be used for while() or ()
+			 //we can try to make this more universal
+			 if (*i == delim)
+			 {
+				 (*count)++;
+				 placeHolder = i;
+				 list<string> tmp(line.begin(), ++placeHolder);
+				 if (*count == delim_layer)
+				 {
+					 return tmp;
+				 }
+			 }
+			 else if (*i == delim && (*(++i) == ";" || *(++i) == "{"))
+			 {
+				 --i;
+				 placeHolder = i;
+				 list<string> tmp(line.begin(), ++placeHolder);
+				 return tmp;
+			 }
+			 else if (*i == delim)
+			 {
+				 (*count)++;
+			 }
 
-	//have to find a way to not make this true
-	for (list<string>::iterator i = line.begin(); i != line.end(); i++)
-	{
-		//can only be used for while() or ()
-		//we can try to make this more universal
-		if (*i == delim)
-		{
-			(*count)++;
-			placeHolder = i;
-			list<string> tmp(line.begin(), ++placeHolder);
-			return tmp;
-		}
-		else if (*i == delim && (*(++i) == ";" || *(++i) == "{"))
-		{
-			--i;
-			placeHolder = i;
-			list<string> tmp(line.begin(), ++placeHolder);
-			return tmp;
-		}
-		else if (*i == delim)
-		{
-			(*count)++;
-		}
 
+		 }
+	 }
 
-	}
+	 if (delim == ")" || delim == "endif")
+	 {
+		 string open;
+		 string close;
+		 if (delim == ")")
+		 {
+			 open = "(";
+			 close = ")";
+		 }
+		 else if (delim == "endif")
+		 {
+			 open = "if";
+			 close = "endif";
+		 }
+		 int delim_layer = 0;
+		 list<string>::iterator beg = line.begin();
+		 list<string>::iterator it = beg;
+		 while (it != line.end())
+		 {
+			 if (*it == open)
+			 {
+				 delim_layer++;
+			 }
+			 else if (*it == close)
+			 {
+				 delim_layer--;
+				 if (delim_layer == 0)
+				 {
+					 list<string> result(beg, ++it);
+					 return result;
+				 }
+			 }
+			 it++;
+		 }
+	 }
 	
 	list<string> tmp;
 	return tmp;
@@ -470,12 +517,6 @@ queue<string> AsmTable::RelopExpression(list<string> line)
 				result.push(*i);
 			}
 		}
-
-	
-
-		
-
-
 	}
 	else if ((count % 2) == 0)
 	{
@@ -537,7 +578,170 @@ queue<string> AsmTable::RelopExpression(list<string> line)
 }
 
 
+void AsmTable::If(list<string> line)
+{
+	queue<string> result;
 
+	list<string>::iterator first = line.begin();
+	list<string>::iterator last = --line.end();
+	list<string>::iterator end;
+
+	asmTableInput entry;
+
+	entry.line = ++lineNum;
+	entry.action = "LABEL";
+	entry.address = 0;
+
+	asmTable.push_back(entry);
+	line.pop_front();
+
+	list<string> condition = getLastDelimiter(line, ")", 0);
+	first = find(line.begin(), line.end(), *(condition.begin()));
+	end = std::next(first, condition.size() - 1);
+
+	line.erase(first, ++end);
+	
+	list<string> left_condition;
+	list<string> right_condition;
+	
+	list<string>::iterator condition_it = ++condition.begin();
+	string condition_relop;
+
+
+	vector<string> relops = { "<", ">", "=<", "=>", "==", "^=" };
+	
+	for (condition_it; condition_it != condition.end(); condition_it++)
+	{
+		for (int i = 0; i < relops.size(); i++) 
+		{
+			if (*condition_it == relops[i])
+			{
+				condition_relop = relops[i];
+				for (list<string>::iterator left = ++condition.begin(); left != condition_it; left++)
+				{
+					left_condition.push_back(*left);
+				}
+				for (list<string>::iterator right = ++condition_it; right != --condition.end(); right++)
+				{
+					right_condition.push_back(*right);
+				}
+			}
+		}
+	}
+
+	queue<string> left_expression = Expression(left_condition);
+	queue<string> right_expression = Expression(right_condition);
+
+	vector<string> badIdea; //this part is a bad idea
+
+	while (left_expression.size() > 0)
+	{
+		badIdea.push_back(left_expression.front());
+		left_expression.pop();
+	}
+	while (right_expression.size() > 0)
+	{
+		badIdea.push_back(right_expression.front());
+		right_expression.pop();
+	}
+
+	badIdea.push_back(condition_relop);
+	for (int i = 0; i < badIdea.size(); i++)
+	{
+		result.push(badIdea[i]);
+	}
+	fillTable(result);
+
+	if (line.front() == "{")
+	{
+		lineNum++;
+		entry.line = lineNum;
+		entry.action = "JMPZ";
+		entry.address = 0;
+
+		asmTable.push_back(entry);
+		jmpstack.push(entry.line);
+
+
+		line.pop_front();
+		line.pop_back();
+		line.pop_back();
+	}
+
+	while (line.size() > 0)
+	{
+		list<string>::iterator first = line.begin();
+
+		//to pop the } in front of else
+		if (line.front() == "}")
+		{
+			line.pop_front();
+			first = line.begin();
+		}
+
+		if (*first == "else")
+		{
+			line.pop_front();
+			line.pop_front();
+			first = line.begin();
+		}
+
+		if (*first == "while")
+		{
+			//While();
+			int delimNum;
+			list<string>::iterator end_it;
+			int count = 0;
+			list<string> lineMarker = getLastDelimiter(line, "}", &count);
+
+			first = find(line.begin(), line.end(), *(lineMarker.begin()));
+			end_it = find(line.begin(), line.end(), *(--lineMarker.end()));
+
+			line.erase(first, ++end_it);
+			While(lineMarker);
+
+		}
+		else if (*first == "if")
+		{
+			list<string>::iterator end_it;
+			list<string> lineMarker = getLastDelimiter(line, "endif", 0);
+
+			first = find(line.begin(), line.end(), *(lineMarker.begin()));
+			end_it = find(line.begin(), line.end(), *(--lineMarker.end()));
+
+			line.erase(first, ++end_it);
+			If(lineMarker);
+		}
+		else if (*first == "get")
+		{
+
+			//Get()
+
+		}
+		else if (*first == "put")
+		{
+			//Put();
+		}
+		else if (sm.getAddress(*first) != -1)
+		{
+			list<string> lineMarker;
+			lineMarker = getLine(line, ";");
+
+			first = find(line.begin(), line.end(), *(lineMarker.begin()));
+			end = find(line.begin(), line.end(), *(--lineMarker.end()));
+
+			line.erase(first, ++end);
+
+			Assign(lineMarker);
+		}
+		else if (*first == "}")
+		{
+			line.pop_back();
+		}
+
+	}
+
+}
 
 void AsmTable::While(list<string> line)
 {
@@ -564,6 +768,8 @@ void AsmTable::While(list<string> line)
 	int count = 0;
 	//first = line.begin();
 	
+
+
 	list<string> section = this->getLastDelimiter(line, ")", &count);
 
 	first = find(line.begin(), line.end(), *(section.begin()));
@@ -821,17 +1027,6 @@ void AsmTable::fillTable(queue<string> postfix)
 
 
 }
-/*vector<asmTableInput> AsmTable::table()
-{
-
-
-
-
-
-}
-*/
-
-
 
 
 void AsmTable::makeAsmTable()
@@ -848,7 +1043,6 @@ void AsmTable::makeAsmTable()
 
 		if (*first == "while")
 		{
-			int delimNum;
 			list<string>::iterator end;
 			int count = 0;
 			list<string> lineMarker = getLastDelimiter(lexemes, "}", &count);
@@ -862,7 +1056,14 @@ void AsmTable::makeAsmTable()
 		}
 		else if (*first == "if")
 		{
-			//If();
+			list<string>::iterator end;
+			list<string> lineMarker = getLastDelimiter(lexemes, "endif", 0);
+
+			first = find(lexemes.begin(), lexemes.end(), *(lineMarker.begin()));
+			end = std::next(first, lineMarker.size());
+
+			lexemes.erase(first, end);
+			If(lineMarker);
 		}
 		else if (*first == "get")
 		{
