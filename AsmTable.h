@@ -30,7 +30,7 @@ class AsmTable
 {
 public:
 
-
+	int lineNum;
 	//vector<string> semantics = { "TYPE", "PUSHI", "PUSHM", "POPM", "STDOUT", "STDIN", "ADD", "SUB", "MUL", "DIV", "GRT", "LES", "EQU", "NEQ", "GEQ", "LEQ", "JUMPZ", "JUMP", "LABEL" };
 	//list<string>::iterator line;
 	SymbolTable sm;
@@ -40,14 +40,28 @@ public:
 	list<string> lexemes;
 
 	//asmTable
+	AsmTable();
 	AsmTable(SymbolTable sm);
 	void makeAsmTable();
 	
 	list<string> getLine(string c);
+	list<string> getLine(list<string> line,string c);
 	list<string> getLine(string first, string last);
 
-	queue<string> Assign(list<string> line);
+
+	list<string> getLastDelimiter(list<string> line,string delim, int *count);
+	bool isSeparetor(string ch);
+
+	void Assign(list<string> line);
 	queue<string> Expression(list<string> line);
+	queue<string> RelopExpression(list<string> line);
+	void Put(list<string> line);
+	void Get(list<string> line);
+	void While(list<string> line);
+	void If(list<string> line);
+
+	void printTable();
+	void fillTable(queue<string> result);
 
 
 

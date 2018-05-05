@@ -11,6 +11,7 @@
 #include <list>
 #include "SyntacticalAnalyzer.h"
 #include "SymbolTable.h"
+#include "AsmTable.h"
 #include <queue>
 #include <algorithm>
 
@@ -193,11 +194,17 @@ int main()
 
 
 	SymbolTable sm(symIds, lexemes);
-	//sm.printSymbolTable();
+	
+	sm.printSymbolTable();
+
+	AsmTable at(sm);
+
+	at.makeAsmTable();
+	at.printTable();
 
 	SyntacticalAnalyzer sa(inputQ);
 
-	sm.printSymbolTable();
+
 
 	sa.analyze();
 

@@ -1,17 +1,33 @@
 #include "stdafx.h"
 #include "AsmTable.h"
 #include <algorithm>
-//#include "SymbolTable.h"
+#include <iostream>
+#include "SymbolTable.h"
 
+using namespace std;
+
+
+
+#pragma region Constructors
+
+AsmTable::AsmTable()
+{
+	lineNum = 0;
+
+}
 
 AsmTable::AsmTable(SymbolTable sm)
 {
 	this->sm = sm;
 	this->lexemes = sm.lexemes;
+	this->lexemes.pop_front();
+	lineNum = 0;
 
 
 
 }
+
+#pragma endregion
 
 #pragma region ASM TABLE generation
 
@@ -28,7 +44,7 @@ list<string> AsmTable::getLine(string delimiter)
 	{
 		list<string> tmp(it, ++end);
 		
-		this->lexemes.erase(it, ++end);
+		this->lexemes.erase(it, end);
 
 
 		return tmp;
@@ -39,6 +55,31 @@ list<string> AsmTable::getLine(string delimiter)
 		return tmp;
 	}
 
+
+}
+
+list<string> AsmTable::getLine(list<string> lexemes, string delimiter)
+{
+	list<string>::iterator it = lexemes.begin();
+
+	list<string>::iterator end;
+
+	end = find(lexemes.begin(), lexemes.end(), delimiter);
+
+	if (end != lexemes.end())
+	{
+		list<string> tmp(it, ++end);
+
+		lexemes.erase(it, end);
+
+
+		return tmp;
+	}
+	else
+	{
+		list<string> tmp;
+		return tmp;
+	}
 
 }
 
@@ -54,7 +95,7 @@ list<string> AsmTable::getLine(string first, string last)
 	{
 		list<string> tmp(it, ++end);
 
-		this->lexemes.erase(it, ++end);
+		this->lexemes.erase(it, end);
 
 
 		return tmp;
@@ -67,127 +108,12 @@ list<string> AsmTable::getLine(string first, string last)
 }
 #pragma endregion
 
+#pragma region Functions
 
-void AsmTable::Assign(list<string> line)
-{
-	list<string>::iterator first = find(line.begin(), line.end(), "=");
-
-	list<string>::iterator last = find(first, line.end(), ";");
-
-	list<string> tmp(first, last);
-
-	queue<string> postfix = Expression(tmp);
-
-	int tableNum = 0;
-
-	
-
-	while (postfix.size() > 0)
-	{
-		asmTableInput input;
-
-		int address = 0;
-		string tmp = postfix.front();
-
-		address = sm.getAddress(tmp);
-
-		if (address != -1)
-		{
-			input.line = ++tableNum;
-			input.address = address;
-			input.action = "PUSHM";
-
-			asmTable.push_back(input);
-			postfix.pop();
-
-		}
-		else
-		{
-			//check for ints
-			if (isdigit(tmp[0]))
-			{
-				input.line = ++tableNum;
-				input.action = "PUSHI";
-				input.address = stoi(tmp);
-
-				asmTable.push_back(input);
-				postfix.pop();
-
-			}
-			else if (tmp == "*")
-			{
-				input.line = ++tableNum;
-				input.action = "MUL";
-				input.address = 0;
-
-				asmTable.push_back(input);
-				postfix.pop();
-
-
-			}
-			else if (tmp == "/")
-			{
-				input.line = ++tableNum;
-				input.action = "DIV";
-				input.address = 0;
-
-				asmTable.push_back(input);
-				postfix.pop();
-
-
-			}
-			else if (tmp == "+")
-			{
-
-				input.line = ++tableNum;
-				input.action = "ADD";
-				input.address = 0;
-
-				asmTable.push_back(input);
-				postfix.pop();
-
-			}
-			else if (tmp == "-")
-			{
-
-				input.line = ++tableNum;
-				input.action = "SUB";
-				input.address = 0;
-
-				asmTable.push_back(input);
-				postfix.pop();
-
-			}
-
-			 
-
-
-		}
-
-		
-
-
-
-
-
-
-	}
-	
-	asmTableInput popm;
-
-	popm.line = ++tableNum;
-	popm.action = "POPM";
-	popm.address = sm.getAddress(*line.begin());
-
-	asmTable.push_back(popm);
-
-
-}
-
-queue<string> AsmTable::expression(list<string> ex) 
+queue<string> AsmTable::Expression(list<string> ex)
 {
 	queue<string> result;
-	
+
 	list<string>::iterator it = find(ex.begin(), ex.end(), "(");
 	while (it != ex.end())
 	{
@@ -198,7 +124,8 @@ queue<string> AsmTable::expression(list<string> ex)
 		temp.splice(temp.begin(), ex, std::next(start_of_paren, 1), end_of_paren);
 
 		queue<string> paren_result;
-
+		
+		//gets id
 		for (list<string>::iterator i = temp.begin(); i != temp.end(); i++)
 		{
 			for (int j = 0; j < sm.symbolTable.size(); j++)
@@ -209,7 +136,7 @@ queue<string> AsmTable::expression(list<string> ex)
 				}
 			}
 		}
-
+		///gets higher order 
 		for (list<string>::iterator i = temp.begin(); i != temp.end(); i++)
 		{
 			if (*i == "*" || *i == "/")
@@ -226,7 +153,7 @@ queue<string> AsmTable::expression(list<string> ex)
 			}
 		}
 
-		while(paren_result.size() != 0)
+		while (paren_result.size() != 0)
 		{
 			result.push(paren_result.front());
 			paren_result.pop();
@@ -252,7 +179,7 @@ queue<string> AsmTable::expression(list<string> ex)
 	it = ex.begin();
 	while (it != ex.end())
 	{
-		if (*it == "*" || *it == "/") 
+		if (*it == "*" || *it == "/")
 		{
 			result.push(*it);
 		}
@@ -262,7 +189,7 @@ queue<string> AsmTable::expression(list<string> ex)
 	it = ex.begin();
 	while (it != ex.end())
 	{
-		if (*it == "+" || *it =="-")
+		if (*it == "+" || *it == "-")
 		{
 			result.push(*it);
 		}
@@ -272,6 +199,628 @@ queue<string> AsmTable::expression(list<string> ex)
 	return result;
 }
 
+void AsmTable::Assign(list<string> line)
+{
+	list<string>::iterator first = find(line.begin(), line.end(), "=");
+
+	list<string>::iterator last = find(first, line.end(), ";");
+
+	list<string> tmp(first, ++last);
+
+	queue<string> postfix = Expression(tmp);
+
+	fillTable(postfix);
+
+	/*while (postfix.size() > 0)
+	{
+		asmTableInput input;
+
+		int address = 0;
+		string tmp = postfix.front();
+
+		address = this->sm.getAddress(tmp);
+
+		if (address != -1)
+		{
+			input.line = ++lineNum;
+			input.address = address;
+			input.action = "PUSHM";
+
+			asmTable.push_back(input);
+			postfix.pop();
+
+		}
+		else
+		{
+			//check for ints
+			if (isdigit(tmp[0]))
+			{
+				input.line = ++lineNum;
+				input.action = "PUSHI";
+				input.address = stoi(tmp);
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "*")
+			{
+				input.line = ++lineNum;
+				input.action = "MUL";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+
+			}
+			else if (tmp == "/")
+			{
+				input.line = ++lineNum;
+				input.action = "DIV";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+
+			}
+			else if (tmp == "+")
+			{
+
+				input.line = ++lineNum;
+				input.action = "ADD";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "-")
+			{
+
+				input.line = ++lineNum;
+				input.action = "SUB";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "==")
+			{
+
+				input.line = ++lineNum;
+				input.action = "EQU";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "^=")
+			{
+
+				input.line = ++lineNum;
+				input.action = "NEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "=<")
+			{
+
+				input.line = ++lineNum;
+				input.action = "LEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "=>")
+			{
+
+				input.line = ++lineNum;
+				input.action = "GEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "<")
+			{
+
+				input.line = ++lineNum;
+				input.action = "LES";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == ">")
+			{
+
+				input.line = ++lineNum;
+				input.action = "GRT";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+
+			 
+
+
+		}
+
+		
+
+	}
+	*/
+	asmTableInput popm;
+
+	popm.line = ++lineNum;
+	popm.action = "POPM";
+	popm.address = sm.getAddress(*line.begin());
+
+	asmTable.push_back(popm);
+
+
+}
+
+
+bool AsmTable::isSeparetor(string to_lex)
+{
+	const int SEPERATOR_LIST_SIZE = 9;
+	const string seperator_list[SEPERATOR_LIST_SIZE] = { ",", ";", "{", "}", "(" , ")" , "[" , "]" };
+
+
+	for (int i = 0; i < SEPERATOR_LIST_SIZE; i++)
+	{
+		if (to_lex == seperator_list[i])
+		{
+			return true;
+
+		}
+
+	}
+	return false;
+
+}
+
+ list<string> AsmTable::getLastDelimiter(list<string> line,string delim, int *count)
+{
+	
+	 list<string>::iterator placeHolder;
+
+	//have to find a way to not make this true
+	for (list<string>::iterator i = line.begin(); i != line.end(); i++)
+	{
+		//can only be used for while() or ()
+		//we can try to make this more universal
+		if (*i == delim)
+		{
+			(*count)++;
+			placeHolder = i;
+			list<string> tmp(line.begin(), ++placeHolder);
+			return tmp;
+		}
+		else if (*i == delim && (*(++i) == ";" || *(++i) == "{"))
+		{
+			--i;
+			placeHolder = i;
+			list<string> tmp(line.begin(), ++placeHolder);
+			return tmp;
+		}
+		else if (*i == delim)
+		{
+			(*count)++;
+		}
+
+
+	}
+	
+	list<string> tmp;
+	return tmp;
+
+	
+
+}
+
+
+
+queue<string> AsmTable::RelopExpression(list<string> line)
+{
+	queue<string> result;
+	list<string>::iterator first = line.begin();
+	int count = 0;
+	list<string>::iterator last;
+	list<string> tmp = getLastDelimiter(line, ")", &count);
+
+
+	first = find(line.begin(), line.end(), *(tmp.begin()));
+	last = find(line.begin(), line.end(), *(--tmp.end()));
+
+	line.erase(first, last);
+
+	if (count == 1)
+	{
+		//while (  ) simple case
+		for (list<string>::iterator i = tmp.begin(); i != tmp.end(); i++)
+		{
+			for (int j = 0; j < sm.symbolTable.size(); j++)
+			{
+				if (*i == sm.symbolTable[j].id)
+				{
+					result.push(*i);
+				}
+			}
+		}
+
+		for (list<string>::iterator i = tmp.begin(); i != tmp.end(); i++)
+		{
+			if (*i == "==" || *i == "^=" || *i == "=<"  || *i == "=>" || *i == ">" || *i == "<")  // == | ^= | > | < | => | =< 
+			{
+				result.push(*i);
+			}
+		}
+
+	
+
+		
+
+
+	}
+	else if ((count % 2) == 0)
+	{
+		//while     ( () ^=  () )
+
+		//removing first paranthesis
+		tmp.pop_front();
+		for (int i = 0; i <= count; i++)
+		{
+			// ( ( points to second paranthesis
+			first = find( tmp.begin(), tmp.end(), "(");
+			last = find(first, tmp.end(), ")");
+			
+			list<string> paren(first, ++last);
+			tmp.erase(first, last);
+			 
+			queue<string> currentQueue = Expression(paren);
+
+			for (int i = 0; i < currentQueue.size(); i++)
+			{
+				result.push(currentQueue.front());
+				currentQueue.pop();
+
+			}
+
+
+
+		}
+
+		for (list<string>::iterator i = tmp.begin(); i != tmp.end(); i++)
+		{
+			for (int j = 0; j < sm.symbolTable.size(); j++)
+			{
+				if (*i == sm.symbolTable[j].id)
+				{
+					result.push(*i);
+				}
+			}
+		}
+
+		for (list<string>::iterator i = tmp.begin(); i != tmp.end(); i++)
+		{
+			if (*i == "==" || *i == "^=" || *i == "=<" || *i == "=>" || *i == ">" || *i == "<")  // == | ^= | > | < | => | =< 
+			{
+				result.push(*i);
+			}
+		}
+
+	
+
+
+	}
+
+	
+	return result;
+	
+	
+
+}
+
+
+
+
+void AsmTable::While(list<string> line)
+{
+	queue<string> postfix;
+
+	//this assumes that first word is while
+	list<string>::iterator first = line.begin();
+	list<string>::iterator last = --line.end();
+	list<string>::iterator end;
+	
+	//initializing the table that corresponds to while statement
+	asmTableInput tmp;
+
+	tmp.line = ++lineNum;
+	tmp.action = "LABEL";
+	tmp.address = 0; // or -1
+
+	jmpstack.push(tmp.line);
+
+	this->asmTable.push_back(tmp);
+	line.pop_front(); //removing while
+
+	//getting the values in paranthesis
+	int count = 0;
+	//first = line.begin();
+	
+	list<string> section = this->getLastDelimiter(line, ")", &count);
+
+	first = find(line.begin(), line.end(), *(section.begin()));
+	end = find(line.begin(), line.end(), *(--section.end()));
+
+	line.erase(first, ++end);
+	postfix = RelopExpression(section);
+
+	//filling the table with queue from relop expression
+	fillTable(postfix);
+
+	if (line.front() == "{")
+	{
+		tmp.line = ++lineNum;
+		tmp.action = "JMPZ";
+		tmp.address = 0; // or -1
+
+		this->jmpstack.push(tmp.line);
+
+		this->asmTable.push_back(tmp);
+		line.pop_front(); //removing while
+
+		while (line.size() > 0)
+		{
+			
+			list<string>::iterator first = line.begin();
+
+			//lineMarker = getLine(";");
+
+			//first = lineMarker.begin();
+
+			if (*first == "while")
+			{
+				//While();
+				int delimNum;
+				list<string>::iterator end;
+				int count = 0;
+				list<string> lineMarker = getLastDelimiter(line, "}", &count);
+
+				first = find(line.begin(), line.end(), *(lineMarker.begin()));
+				end = find(line.begin(), line.end(), *(--lineMarker.end()));
+
+				line.erase(first, ++end);
+				While(lineMarker);
+
+			}
+			else if (*first == "if")
+			{
+				//If();
+			}
+			else if (*first == "get")
+			{
+
+				//Get()
+
+			}
+			else if (*first == "put")
+			{
+				//Put();
+			}
+			else if (sm.getAddress(*first) != -1)
+			{
+				list<string> lineMarker;
+				lineMarker = getLine(line,";");
+
+				first = find(line.begin(), line.end(), *(lineMarker.begin()));
+				end = find(line.begin(), line.end(), *(--lineMarker.end()));
+
+				line.erase(first, ++end);
+
+				Assign(lineMarker);
+			}
+			else if (*first == "}")
+			{
+				line.pop_back();
+			}
+
+		}
+
+
+	}
+
+}
+
+#pragma endregion
+
+void AsmTable::printTable()
+{
+	asmTableInput input;
+	for (int i = 0; i < asmTable.size(); i++)
+	{
+		input = asmTable[i];
+		cout << input.line << "\t" << input.action << "\t" << input.address << endl;
+
+	}
+
+
+}
+
+void AsmTable::fillTable(queue<string> postfix)
+{
+
+	while (postfix.size() > 0)
+	{
+		asmTableInput input;
+
+		int address = 0;
+		string tmp = postfix.front();
+
+		address = this->sm.getAddress(tmp);
+
+		if (address != -1)
+		{
+			input.line = ++lineNum;
+			input.address = address;
+			input.action = "PUSHM";
+
+			asmTable.push_back(input);
+			postfix.pop();
+
+		}
+		else
+		{
+			//check for ints
+			if (isdigit(tmp[0]))
+			{
+				input.line = ++lineNum;
+				input.action = "PUSHI";
+				input.address = stoi(tmp);
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "*")
+			{
+				input.line = ++lineNum;
+				input.action = "MUL";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+
+			}
+			else if (tmp == "/")
+			{
+				input.line = ++lineNum;
+				input.action = "DIV";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+
+			}
+			else if (tmp == "+")
+			{
+
+				input.line = ++lineNum;
+				input.action = "ADD";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "-")
+			{
+
+				input.line = ++lineNum;
+				input.action = "SUB";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "==")
+			{
+
+				input.line = ++lineNum;
+				input.action = "EQU";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "^=")
+			{
+
+				input.line = ++lineNum;
+				input.action = "NEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "=<")
+			{
+
+				input.line = ++lineNum;
+				input.action = "LEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "=>")
+			{
+
+				input.line = ++lineNum;
+				input.action = "GEQ";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == "<")
+			{
+
+				input.line = ++lineNum;
+				input.action = "LES";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+			else if (tmp == ">")
+			{
+
+				input.line = ++lineNum;
+				input.action = "GRT";
+				input.address = 0;
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+			}
+
+
+
+
+		}
+
+
+
+	}
+
+
+
+}
 /*vector<asmTableInput> AsmTable::table()
 {
 
@@ -287,18 +836,28 @@ queue<string> AsmTable::expression(list<string> ex)
 
 void AsmTable::makeAsmTable()
 {
-	list<string> lineMarker;
+	
 	while (this->lexemes.size() > 0)
 	{
-		list<string>::iterator first;
+		
+		list<string>::iterator first = this->lexemes.begin();
 
-		lineMarker = getLine(";");
+		//lineMarker = getLine(";");
 
-		first = lineMarker.begin();
+		//first = lineMarker.begin();
 
 		if (*first == "while")
 		{
-			//While();
+			int delimNum;
+			list<string>::iterator end;
+			int count = 0;
+			list<string> lineMarker = getLastDelimiter(lexemes, "}", &count);
+
+			first = find(lexemes.begin(), lexemes.end(), *(lineMarker.begin()) );
+			end = find(lexemes.begin(),lexemes.end() , *(--lineMarker.end()));
+
+			lexemes.erase(first, ++end);
+			While(lineMarker);
 
 		}
 		else if (*first == "if")
@@ -317,13 +876,16 @@ void AsmTable::makeAsmTable()
 		}
 		else if (sm.getAddress(*first) != -1)
 		{
-			//Assign();
+			list<string> lineMarker;
+			lineMarker = getLine(";");
+
+			first = lineMarker.begin();
+
+			Assign(lineMarker);
 		}
 
 	}
 	
-
-
 }
 
 

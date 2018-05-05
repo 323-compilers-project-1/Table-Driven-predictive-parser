@@ -1,19 +1,16 @@
 %%
 integer i, max, sum;
 
-integer a, b, c;
-
-boolean tru, fal;
-
-boolean i;
-
 sum = 0;
 
 i = 1;
-get(max);
-while(i<max){
+while(i < max)
+{
+
 sum = sum + i;
 i = i + 1;
+
 }
 
-put(sum + max);
+i = i + 1;
+

@@ -140,7 +140,19 @@ int SymbolTable::getAddress(string input)
 	int i = 0;
 	int address = -1;
 
-	while (symbolTable[i].id != input && i < symbolTable.size())
+	for (int i = 0; i < symbolTable.size(); i++)
+	{
+		if (symbolTable[i].id == input)
+		{
+			address = symbolTable[i].memAddrs;
+			return address;
+		}
+
+	}
+
+	return address;
+
+	/*while (symbolTable[i].id != input && i < symbolTable.size())
 	{
 		i++;
 	}
@@ -160,7 +172,7 @@ int SymbolTable::getAddress(string input)
 		return address;
 
 
-	}
+	}*/
 
 }
 
