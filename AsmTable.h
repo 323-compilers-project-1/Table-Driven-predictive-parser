@@ -36,7 +36,7 @@ public:
 	SymbolTable sm;
 	vector<asmTableInput> asmTable;
 	
-	queue<int> jmpstack;
+	stack<int> jmpstack;
 	list<string> lexemes;
 
 	//asmTable
@@ -55,10 +55,10 @@ public:
 	void Assign(list<string> line);
 	queue<string> Expression(list<string> line);
 	queue<string> RelopExpression(list<string> line);
+	void If(list<string> line);
+	void While(list<string> line);
 	void Put(list<string> line);
 	void Get(list<string> line);
-	void While(list<string> line);
-	void If(list<string> line);
 
 	void printTable();
 	void fillTable(queue<string> result);

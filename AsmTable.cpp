@@ -664,8 +664,6 @@ void AsmTable::If(list<string> line)
 
 
 		line.pop_front();
-		line.pop_back();
-		line.pop_back();
 	}
 
 	while (line.size() > 0)
@@ -675,18 +673,32 @@ void AsmTable::If(list<string> line)
 		//to pop the } in front of else
 		if (line.front() == "}")
 		{
-			line.pop_front();
-			first = line.begin();
+			if (*(std::next(line.begin(), 1)) == "endif")
+			{
+				line.pop_front();
+				line.pop_front();
+
+				int jump = jmpstack.top();
+				jmpstack.pop();
+				asmTable[jump - 1].action += " " + std::to_string(lineNum + 1);
+
+				first = line.begin();
+			}
+			else
+			{
+				line.pop_front();
+				first = line.begin();
+			}
 		}
 
-		if (*first == "else")
+		else if (*first == "else")
 		{
 			line.pop_front();
 			line.pop_front();
 			first = line.begin();
 		}
 
-		if (*first == "while")
+		else if (*first == "while")
 		{
 			//While();
 			int delimNum;
@@ -852,6 +864,43 @@ void AsmTable::While(list<string> line)
 
 	}
 
+}
+
+void AsmTable::Put(list<string> line)
+{
+	line.pop_front(); //move past put onto "("
+	list<string> expression_input = getLastDelimiter(line, ")", 0);
+	queue<string> expression_output = Expression(expression_input);
+	fillTable(expression_output);
+
+	asmTableInput put_instruction = getTableInput(lineNum, "STDOUT", 0);
+	asmTable.push_back(put_instruction);
+	lineNum++;
+}
+
+void AsmTable::Get(list<string> line)
+{
+	line.pop_front();
+	line.pop_front();
+
+	asmTableInput push_instruction = getTableInput(lineNum, "PUSH M", sm.getAddress(line.front()));
+	asmTable.push_back(push_instruction);
+	lineNum++;
+
+	asmTableInput get_instruction = getTableInput(lineNum, "STDIN", 0);
+	asmTable.push_back(get_instruction);
+	lineNum++;
+}
+
+asmTableInput AsmTable::getTableInput(int line, string action, int address)
+{
+	asmTableInput instruction;
+	
+	instruction.line = line;
+	instruction.action = action;
+	instruction.address = address;
+
+	return instruction;
 }
 
 #pragma endregion
