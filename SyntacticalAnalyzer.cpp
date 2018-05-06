@@ -2200,7 +2200,7 @@ productionSet SyntacticalAnalyzer::getProductionSet(string input)
 
 
 //called in main performs all output and stack manipuliation
-void SyntacticalAnalyzer::analyze()
+bool SyntacticalAnalyzer::analyze()
 {
 	//creating iterator in order to use find functions for map
 	unordered_map<string, vector<string>>::const_iterator got;
@@ -2242,7 +2242,7 @@ void SyntacticalAnalyzer::analyze()
 		{
 			cout << prod << " not found" << endl;
 			output_file << prod << " not found" << endl;
-			return;
+			return false;
 		}
 
 		vector<string> cellVector = got->second;
@@ -2265,6 +2265,7 @@ void SyntacticalAnalyzer::analyze()
 			{
 				print_production(tableStack, inputQ, table, output_file);
 				this->tableStack.pop();
+				this->inputQ.pop();			//
 				for (int i = cellVector.size(); i > 0; i--)
 				{
 					tableStack.push(cellVector.back());
@@ -2299,11 +2300,13 @@ void SyntacticalAnalyzer::analyze()
 	{
 		cout << "Correct syntax" << endl;
 		output_file << "Correct syntax" << endl;
+		return true;
 	}
 	else
 	{
 		cout << "Incorrect input" << endl;
 		output_file << "Incorrect input" << endl;
+		return false;
 	}
 
 	output_file.close();

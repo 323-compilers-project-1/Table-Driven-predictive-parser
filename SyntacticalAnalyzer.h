@@ -52,7 +52,7 @@ public:
 	SyntacticalAnalyzer();		//mainly used for error checking in main
 	SyntacticalAnalyzer(queue<string> inputQ);
 
-	void analyze();
+	bool analyze();
 
 
 };

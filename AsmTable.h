@@ -35,21 +35,23 @@ public:
 	//list<string>::iterator line;
 	SymbolTable sm;
 	vector<asmTableInput> asmTable;
-	
+
 	stack<int> jmpstack;
+	queue<int> jmpQ;
 	list<string> lexemes;
 
 	//asmTable
 	AsmTable();
 	AsmTable(SymbolTable sm);
 	void makeAsmTable();
-	
+
 	list<string> getLine(string c);
-	list<string> getLine(list<string> line,string c);
+	list<string> getLine(list<string> line, string c);
 	list<string> getLine(string first, string last);
+	asmTableInput getTableInput(int line, string action, int address);
 
 
-	list<string> getLastDelimiter(list<string> line,string delim, int *count);
+	list<string> getLastDelimiter(list<string> line, string delim, int *count);
 	bool isSeparetor(string ch);
 
 	void Assign(list<string> line);
@@ -68,7 +70,7 @@ public:
 
 
 
-	
+
 	~AsmTable();
 };
 

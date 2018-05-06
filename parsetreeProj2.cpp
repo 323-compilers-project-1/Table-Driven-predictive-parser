@@ -193,16 +193,25 @@ int main()
 	//hard coding the removal of integer from symIds
 
 
-	SymbolTable sm(symIds, lexemes);
-	
-	sm.printSymbolTable();
 
-	AsmTable at(sm);
-
-	at.makeAsmTable();
-	at.printTable();
 
 	SyntacticalAnalyzer sa(inputQ);
+
+	if (sa.analyze())
+	{
+		SymbolTable sm(symIds, lexemes);
+
+		sm.printSymbolTable();
+
+		AsmTable at(sm);
+
+		at.makeAsmTable();
+		at.printTable();
+	}
+	else
+	{
+		cout << "syntax incorrect" << endl;
+	}
 
 
 
