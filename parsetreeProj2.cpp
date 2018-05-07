@@ -105,6 +105,13 @@ int main()
 				Token tmp = tokenList.front();
 				lexemes.push_back(tmp.lexeme);
 				char dSign = '$';
+
+				if (tmp.lexeme == "int" || tmp.lexeme == "boolean")
+				{
+					symIds.push_back(tmp.lexeme);
+				}
+
+
 				if (tmp.token == "identifier" || (tmp.lexeme).back() == dSign)
 				{
 					if (tmp.lexeme != "int") //need to add the vect for all identifiers here
@@ -113,10 +120,6 @@ int main()
 
 						//add queue for lexmes of identifiers to keep track of when they were used project 3
 
-						if (tmp.lexeme == "integer" || tmp.lexeme == "boolean")
-						{
-							symIds.push_back(tmp.lexeme);
-						}
 
 						it = find(symIds.begin(), symIds.end(), tmp.lexeme);
 
@@ -192,21 +195,21 @@ int main()
 
 	//hard coding the removal of integer from symIds
 
+	SymbolTable sm(symIds, lexemes);
 
+	sm.printSymbolTable();
+
+	AsmTable at(sm);
+
+	at.makeAsmTable();
+	at.printTable();
 
 
 	SyntacticalAnalyzer sa(inputQ);
 
 	if (sa.analyze())
 	{
-		SymbolTable sm(symIds, lexemes);
 
-		sm.printSymbolTable();
-
-		AsmTable at(sm);
-
-		at.makeAsmTable();
-		at.printTable();
 	}
 	else
 	{
@@ -215,7 +218,7 @@ int main()
 
 
 
-	sa.analyze();
+	//sa.analyze();
 
 	return 0;
 }

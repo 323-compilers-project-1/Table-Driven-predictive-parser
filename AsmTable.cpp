@@ -945,6 +945,27 @@ void AsmTable::fillTable(queue<string> postfix)
 				postfix.pop();
 
 			}
+			else if (tmp == "true" || tmp == "false")
+			{
+				input.line = ++lineNum;
+				input.action = "PUSHI";
+
+				if (tmp == "true")
+				{
+					input.address = 1;
+				}
+				else if (tmp == "false")
+				{
+					input.address = 0;
+				}
+				else
+					input.address = stoi(tmp);
+
+				asmTable.push_back(input);
+				postfix.pop();
+
+
+			}
 			else if (tmp == "*")
 			{
 				input.line = ++lineNum;

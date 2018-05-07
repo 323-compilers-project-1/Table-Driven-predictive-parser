@@ -54,7 +54,7 @@ void SymbolTable::removeBool()
 
 void SymbolTable::removeInt()
 {
-	string type = "integer";
+	string type = "int";
 
 	list<string>::iterator it;
 
@@ -84,7 +84,7 @@ void SymbolTable::createSymbolTable()
 
 	for (int i = 0; i < symId.size(); i++)
 	{
-		if (symId[i] == "integer")
+		if (symId[i] == "int")
 		{
 			type = "integer";
 			input.id = "";

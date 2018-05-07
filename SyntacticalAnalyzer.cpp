@@ -2265,7 +2265,7 @@ bool SyntacticalAnalyzer::analyze()
 			{
 				print_production(tableStack, inputQ, table, output_file);
 				this->tableStack.pop();
-				this->inputQ.pop();			//
+				//this->inputQ.pop();			//
 				for (int i = cellVector.size(); i > 0; i--)
 				{
 					tableStack.push(cellVector.back());
