@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "AsmTable.h"
 #include <algorithm>
 #include <iostream>
@@ -127,6 +126,7 @@ queue<string> AsmTable::Expression(list<string> ex)
 		{
 			for (int j = 0; j < sm.symbolTable.size(); j++)
 			{
+				string int_check = *it;
 				if (*i == sm.symbolTable[j].id)
 				{
 					paren_result.push(*i);
@@ -170,6 +170,11 @@ queue<string> AsmTable::Expression(list<string> ex)
 				result.push(*it);
 			}
 		}
+		string int_check = *it;
+		if (isdigit(int_check[0]))
+		{
+			result.push(*it);
+		}
 		it++;
 	}
 
@@ -208,116 +213,6 @@ void AsmTable::Assign(list<string> line)
 
 	fillTable(postfix);
 
-	/*while (postfix.size() > 0)
-	{
-	asmTableInput input;
-	int address = 0;
-	string tmp = postfix.front();
-	address = this->sm.getAddress(tmp);
-	if (address != -1)
-	{
-	input.line = ++lineNum;
-	input.address = address;
-	input.action = "PUSHM";
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else
-	{
-	//check for ints
-	if (isdigit(tmp[0]))
-	{
-	input.line = ++lineNum;
-	input.action = "PUSHI";
-	input.address = stoi(tmp);
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "*")
-	{
-	input.line = ++lineNum;
-	input.action = "MUL";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "/")
-	{
-	input.line = ++lineNum;
-	input.action = "DIV";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "+")
-	{
-	input.line = ++lineNum;
-	input.action = "ADD";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "-")
-	{
-	input.line = ++lineNum;
-	input.action = "SUB";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "==")
-	{
-	input.line = ++lineNum;
-	input.action = "EQU";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "^=")
-	{
-	input.line = ++lineNum;
-	input.action = "NEQ";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "=<")
-	{
-	input.line = ++lineNum;
-	input.action = "LEQ";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "=>")
-	{
-	input.line = ++lineNum;
-	input.action = "GEQ";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == "<")
-	{
-	input.line = ++lineNum;
-	input.action = "LES";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-	else if (tmp == ">")
-	{
-	input.line = ++lineNum;
-	input.action = "GRT";
-	input.address = 0;
-	asmTable.push_back(input);
-	postfix.pop();
-	}
-
-	}
-
-	}
-	*/
 	asmTableInput popm;
 
 	popm.line = ++lineNum;
@@ -439,8 +334,6 @@ list<string> AsmTable::getLastDelimiter(list<string> line, string delim, int *co
 
 }
 
-
-
 queue<string> AsmTable::RelopExpression(list<string> line)
 {
 	queue<string> result;
@@ -536,7 +429,6 @@ queue<string> AsmTable::RelopExpression(list<string> line)
 
 }
 
-
 void AsmTable::If(list<string> line)
 {
 	queue<string> result;
@@ -545,13 +437,9 @@ void AsmTable::If(list<string> line)
 	list<string>::iterator last = --line.end();
 	list<string>::iterator end;
 
-	asmTableInput entry;
-
-	entry.line = ++lineNum;
-	entry.action = "LABEL";
-	entry.address = 0;
-
+	asmTableInput entry = getTableInput(lineNum, "LABEL", 0);
 	asmTable.push_back(entry);
+	lineNum++;
 	line.pop_front();
 
 	list<string> condition = getLastDelimiter(line, ")", 0);
@@ -613,13 +501,11 @@ void AsmTable::If(list<string> line)
 
 	if (line.front() == "{")
 	{
-		lineNum++;
-		entry.line = lineNum;
-		entry.action = "JMPZ";
-		entry.address = 0;
-
+		entry = getTableInput(lineNum, "JMPZ", 0);
 		asmTable.push_back(entry);
 		jmpstack.push(entry.line);
+		lineNum++;
+
 
 
 		line.pop_front();
@@ -639,7 +525,7 @@ void AsmTable::If(list<string> line)
 
 				int jump = jmpstack.top();
 				jmpstack.pop();
-				asmTable[jump - 1].action += " " + std::to_string(lineNum + 1);
+				asmTable[jump - 1].address = lineNum + 1;
 
 				first = line.begin();
 			}
@@ -875,9 +761,20 @@ void AsmTable::Get(list<string> line)
 	line.pop_front();
 	line.pop_front();
 
-	asmTableInput push_instruction = getTableInput(lineNum, "PUSH M", sm.getAddress(line.front()));
-	asmTable.push_back(push_instruction);
-	lineNum++;
+	list<string>::iterator it = line.begin();
+	while (it != line.end())
+	{
+		for (size_t i = 0; i < sm.symbolTable.size(); i++)
+		{
+			if (*it == sm.symbolTable[i].id)
+			{
+				asmTableInput push_instruction = getTableInput(lineNum, "PUSH M", sm.getAddress(*it));
+				asmTable.push_back(push_instruction);
+				lineNum++;
+			}
+		}
+		it++;
+	}
 
 	asmTableInput get_instruction = getTableInput(lineNum, "STDIN", 0);
 	asmTable.push_back(get_instruction);
@@ -1076,18 +973,8 @@ void AsmTable::fillTable(queue<string> postfix)
 				postfix.pop();
 
 			}
-
-
-
-
 		}
-
-
-
 	}
-
-
-
 }
 
 
@@ -1110,9 +997,9 @@ void AsmTable::makeAsmTable()
 			list<string> lineMarker = getLastDelimiter(lexemes, "}", &count);
 
 			first = find(lexemes.begin(), lexemes.end(), *(lineMarker.begin()));
-			end = find(lexemes.begin(), lexemes.end(), *(--lineMarker.end()));
+			end = std::next(first, lexemes.size());
 
-			lexemes.erase(first, ++end);
+			lexemes.erase(first, end);
 			While(lineMarker);
 
 		}
